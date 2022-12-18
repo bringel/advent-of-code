@@ -22,3 +22,14 @@ common_items = input.map { |l| find_common_item(l).first }
 
 puts("Part 1")
 puts(common_items.sum { |i| get_priority(i) })
+
+elf_groups = input.each_slice(3).to_a
+
+priority_sum = elf_groups.sum do |group|
+  common_item = group[0].chars & group[1].chars & group[2].chars
+
+  get_priority(common_item.first)
+end
+
+puts("Part 2")
+puts(priority_sum)
