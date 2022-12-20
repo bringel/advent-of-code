@@ -19,6 +19,13 @@ class CargoShip
     @stacks.map(&:last).join("")
   end
 
+  def part2()
+    @instructions.each do |i|
+      handle_instruction_part_two(i)
+    end
+    @stacks.map(&:last).join("")
+  end
+
   def parse_stacks(lines)
     matcher = /(?:\s(\s)\s|\[(\w)\])\s?/
 
@@ -59,8 +66,20 @@ class CargoShip
       ending_stack.push(item)
     end
   end
+
+  def handle_instruction_part_two(instruction)
+    starting_stack = @stacks[instruction[:starting_stack] - 1]
+    ending_stack = @stacks[instruction[:ending_stack] - 1]
+
+    items = starting_stack.pop(instruction[:total_to_move])
+    ending_stack.push(*items)
+  end
 end
 
 ship = CargoShip.new(input)
 puts("Part 1")
 puts(ship.part1())
+
+ship2 = CargoShip.new(input)
+puts("Part 2")
+puts(ship2.part2())
