@@ -32,8 +32,12 @@ class DirectoryRecord
     end
   end
 
+  def child_directories()
+    @children.filter { |c| c.instance_of?(DirectoryRecord) }
+  end
+
   def to_s()
-    "Directory #{@name} - parent: #{@parent&.name} children: #{@children.map { |c| c.to_s } }"
+    "Directory #{@name} - size: #{size} parent: #{@parent&.name}"
   end
 end
 
@@ -93,6 +97,31 @@ class Parser
     end
   end
 
+  def get_all_directories(starting_directory: @root)
+    if starting_directory.child_directories.empty?
+      [starting_directory]
+    else
+      [starting_directory].concat(starting_directory.child_directories.map do |c|
+        get_all_directories(starting_directory: c)
+      end).flatten
+    end
+  end
+
+  def find_directory_to_delete
+    total_space = 70000000
+    needed_space = 30000000
+    unused_space = total_space - @root.size
+
+    candidate_directories = get_all_directories()
+
+    directories_that_will_give_enough_space = candidate_directories.filter do |d|
+      needed_space <= (unused_space + d.size)
+    end
+    directories_that_will_give_enough_space.min do |a, b|
+      a.size <=> b.size
+    end
+  end
+
   def command?(line)
     line.start_with?("$")
   end
@@ -105,13 +134,17 @@ class Parser
   def directory?(line)
     line.start_with?("dir")
   end
-
 end
 
 parser = Parser.new(input)
-# directories = []
-# parser.get_directories_under_100000(directory: parser.root, large_directories: directories)
-# pp directories
-pp (parser.get_directories_under_100000().sum do |d|
+
+
+directory_total = (parser.get_directories_under_100000().sum do |d|
   d.size
 end)
+
+puts("Part 1")
+puts(directory_total)
+
+puts("Part 2")
+puts(parser.find_directory_to_delete)
