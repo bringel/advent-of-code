@@ -61,3 +61,41 @@ end
 
 puts "Part 1:"
 puts sum_part_numbers(input: input)
+
+def fetch_gears(input:)
+  prospective_parts = gather_part_numbers(input: input)
+  part_numbers = prospective_parts.filter { |p| is_real_part_number?(p, input: input) }
+
+  all_stars = gather_part_numbers(input: input, matcher: %r{(\*)})
+
+  all_stars.filter_map do |star_part|
+    adjacent_indicies = get_adjacent_indicies(part: star_part, max_row: input.length - 1, max_col: input.first.length - 1)
+    adjacent_parts = part_numbers.filter do |part|
+      part_range = part[:start_position]..part[:end_position]
+      part_indicies = part_range.map do |x|
+        { x: x, y: part[:line]}
+      end
+
+      part_indicies.any? { |index| adjacent_indicies.include?(index) }
+    end
+    if adjacent_parts.length == 2
+      { star_part: star_part, adjacent_parts: adjacent_parts}
+    end
+  end
+end
+
+def get_gear_ratios(input:)
+  gears = fetch_gears(input: input)
+
+  gears.map do |gear|
+    part_numbers = gear[:adjacent_parts].map { |p| p[:text].to_i }
+    part_numbers.reduce(:*)
+  end
+end
+
+def sum_gear_ratios(input:)
+  get_gear_ratios(input: input).sum
+end
+
+puts "Part 2:"
+puts sum_gear_ratios(input: input)
