@@ -67,13 +67,34 @@ def get_seed_location(seed:, mappings:)
 end
 
 def get_lowest_seed_location(input:)
-  seeds = input.shift
-  input.shift
+  seeds = input.first
+
   parsed_seeds = seeds.scan(/\d+/).map(&:to_i)
-  mappings = parse_mappings(input: input)
+  mappings = parse_mappings(input: input[2..])
 
   parsed_seeds.map { |s| get_seed_location(seed: s, mappings: mappings) }.min
 end
 
 puts "Part 1:"
 puts get_lowest_seed_location(input: input)
+
+# ---
+
+def get_seed_ranges(seed_input)
+  seed_input.scan(/(\d+ \d+)/).flat_map do |(pair)|
+    start, length = pair.split(" ").map(&:to_i)
+    (start...(start + length))
+  end.reduce(&:chain)
+end
+
+def get_lowest_seed_location_from_ranges(input:)
+  seeds = input.first
+
+  parsed_seeds = get_seed_ranges(seeds)
+  mappings = parse_mappings(input: input[2..])
+
+  parsed_seeds.map { |s| get_seed_location(seed: s, mappings: mappings) }.min
+end
+
+puts "Part 2:"
+# puts get_lowest_seed_location_from_ranges(input: input)
