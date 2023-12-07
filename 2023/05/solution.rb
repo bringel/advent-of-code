@@ -6,18 +6,39 @@ input = File.readlines("./input.txt", chomp: true)
 def parse_map(input:)
   mapping_matcher = %r{(?<dest_start>\d+) (?<source_start>\d+) (?<length>\d+)}
 
-  parsed_map = input.map do |line|
-    match = mapping_matcher.match(line).named_captures
+  # parsed_map = input.map do |line|
+  #   match = mapping_matcher.match(line).named_captures
 
-    destination_range = (match["dest_start"].to_i)...(match["dest_start"].to_i + match["length"].to_i)
-    source_range = (match["source_start"].to_i)...(match["source_start"].to_i + match["length"].to_i)
+  #   destination_range = (match["dest_start"].to_i)...(match["dest_start"].to_i + match["length"].to_i)
+  #   source_range = (match["source_start"].to_i)...(match["source_start"].to_i + match["length"].to_i)
 
-    source_range.zip(destination_range).to_h
-  end.reduce(&:merge)
+  #   source_range.zip(destination_range).to_h
+  # end.reduce(&:merge)
   
-  parsed_map.default_proc = proc { |h, k| k }
+  # parsed_map.default_proc = proc { |h, k| k }
   
-  parsed_map
+  # parsed_map
+
+  Hash.new do |h, k|
+    ranges = input.map do |line|
+      match = mapping_matcher.match(line).named_captures
+
+      {
+        source_range: (match["source_start"].to_i)...(match["source_start"].to_i + match["length"].to_i),
+        destination_start: match["dest_start"].to_i 
+      }
+    end
+
+    target_range = ranges.find { |r| r[:source_range].include?(k) }
+    if target_range.nil?
+      k
+    else
+
+      diff = k - target_range[:source_range].begin
+
+      target_range[:destination_start] + diff
+    end
+  end
 end
 
 def parse_mappings(input:)
